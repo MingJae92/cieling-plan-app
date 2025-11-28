@@ -16,13 +16,7 @@ export default function Toolbar() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div>
-        <label>Width</label>
-        <input type="number" value={w} onChange={(e)=>setW(Number(e.target.value))} style={{width: '100%'}}/>
-        <label>Height</label>
-        <input type="number" value={h} onChange={(e)=>setH(Number(e.target.value))} style={{width: '100%'}}/>
-        <button onClick={()=>setSize(Math.max(1,w), Math.max(1,h))} style={{marginTop:8}}>Set Size</button>
-      </div>
+      
 
       <div>
         <button onClick={()=>makeItem('light')}>Add Light</button>
