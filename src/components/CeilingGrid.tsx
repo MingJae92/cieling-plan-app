@@ -21,18 +21,11 @@ export default function CeilingGrid() {
   const layerRef = useRef<Konva.Layer>(null);
 
   const [scale, setScale] = useState<number>(1);
-
-  // Tile sizes
   const [tileWidth, setTileWidth] = useState<number>(48);
   const [tileHeight, setTileHeight] = useState<number>(48);
-
-  // Input fields (mm)
   const [inputTileWidth, setInputTileWidth] = useState<number>(600);
   const [inputTileHeight, setInputTileHeight] = useState<number>(600);
 
-  const padding = 20;
-
-  // Initial tile sizes (auto-fit once)
   useEffect(() => {
     const maxW = window.innerWidth - 220;
     const maxH = window.innerHeight - 60;
@@ -46,7 +39,6 @@ export default function CeilingGrid() {
 
   const applyTileSize = () => {
     const scaleFactor = 0.08; // 600mm ≈ 48px
-
     setTileWidth(Math.max(20, Math.min(inputTileWidth * scaleFactor, 200)));
     setTileHeight(Math.max(20, Math.min(inputTileHeight * scaleFactor, 200)));
   };
@@ -78,7 +70,6 @@ export default function CeilingGrid() {
     stage.batchDraw();
   };
 
-  // Grid lines
   const verticalLines: number[][] = [];
   for (let i = 0; i <= width; i++)
     verticalLines.push([i * tileWidth, 0, i * tileWidth, height * tileHeight]);
@@ -91,7 +82,6 @@ export default function CeilingGrid() {
       j * tileHeight,
     ]);
 
-  // Position helpers
   const toScreenX = (gx: number) => gx * tileWidth + tileWidth / 2;
   const toScreenY = (gy: number) => gy * tileHeight + tileHeight / 2;
 
@@ -161,10 +151,24 @@ export default function CeilingGrid() {
                 onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => {
                   const nx = Math.round(e.target.x() / tileWidth - 0.5);
                   const ny = Math.round(e.target.y() / tileHeight - 0.5);
-                  updateComponent(c.id, {
-                    x: Math.max(0, Math.min(nx, width - 1)),
-                    y: Math.max(0, Math.min(ny, height - 1)),
-                  });
+
+                  const clampedX = Math.max(0, Math.min(nx, width - 1));
+                  const clampedY = Math.max(0, Math.min(ny, height - 1));
+
+                  const occupied = components.some(
+                    other => other.id !== c.id && other.x === clampedX && other.y === clampedY
+                  );
+
+                  if (!occupied) {
+                    updateComponent(c.id, { x: clampedX, y: clampedY });
+                  } else {
+                    // Revert to original position
+                    e.target.position({
+                      x: c.x * tileWidth + tileWidth / 2,
+                      y: c.y * tileHeight + tileHeight / 2,
+                    });
+                    alert("Cannot move here — tile already occupied!");
+                  }
                 },
                 onDblClick: () => removeComponent(c.id),
               };
