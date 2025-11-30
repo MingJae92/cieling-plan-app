@@ -85,11 +85,10 @@ export default function CeilingGrid() {
     return acc;
   }, {});
 
-  // Function to remove all tiles of a type
+  // Remove one tile of a given type (last added tile)
   const removeByType = (type: string) => {
-    components
-      .filter((c) => c.type === type)
-      .forEach((c) => removeComponent(c.id));
+    const tile = [...components].reverse().find((c) => c.type === type);
+    if (tile) removeComponent(tile.id);
   };
 
   return (
@@ -125,7 +124,6 @@ export default function CeilingGrid() {
           Apply Tile Size
         </Button>
 
-        {/* Total tiles & type counts */}
         <Typography variant="body2" sx={{ marginTop: 2 }}>
           Total Tiles: {components.length}
         </Typography>
@@ -133,14 +131,13 @@ export default function CeilingGrid() {
           Lights: {typeCounts.light || 0} | Air Supply: {typeCounts.air_supply || 0} | Air Return: {typeCounts.air_return || 0} | Smoke Detectors: {typeCounts.smoke_detector || 0} | Invalid: {typeCounts.invalid || 0}
         </Typography>
 
-        {/* Remove buttons */}
         <Typography variant="subtitle1">Remove Tiles:</Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 1 }}>
-          <Button variant="outlined" onClick={() => removeByType("light")}>Remove Lights</Button>
+          <Button variant="outlined" onClick={() => removeByType("light")}>Remove Light</Button>
           <Button variant="outlined" onClick={() => removeByType("air_supply")}>Remove Air Supply</Button>
           <Button variant="outlined" onClick={() => removeByType("air_return")}>Remove Air Return</Button>
-          <Button variant="outlined" onClick={() => removeByType("smoke_detector")}>Remove Smoke Detectors</Button>
-          <Button variant="outlined" onClick={() => removeByType("invalid")}>Remove Invalid Tiles</Button>
+          <Button variant="outlined" onClick={() => removeByType("smoke_detector")}>Remove Smoke Detector</Button>
+          <Button variant="outlined" onClick={() => removeByType("invalid")}>Remove Invalid Tile</Button>
           <Button variant="contained" color="secondary" onClick={clear}>Clear All</Button>
         </Box>
       </Box>
