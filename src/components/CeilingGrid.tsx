@@ -16,6 +16,7 @@ export default function CeilingGrid() {
   const components = useCeilingStore((s) => s.components);
   const updateComponent = useCeilingStore((s) => s.updateComponent);
   const removeComponent = useCeilingStore((s) => s.removeComponent);
+  const clear = useCeilingStore((s) => s.clear);
 
   const stageRef = useRef<Konva.Stage>(null);
   const layerRef = useRef<Konva.Layer>(null);
@@ -29,16 +30,14 @@ export default function CeilingGrid() {
   useEffect(() => {
     const maxW = window.innerWidth - 220;
     const maxH = window.innerHeight - 60;
-
     const newTileW = Math.floor(maxW / width);
     const newTileH = Math.floor(maxH / height);
-
     setTileWidth(Math.max(20, Math.min(newTileW, 120)));
     setTileHeight(Math.max(20, Math.min(newTileH, 120)));
   }, [width, height]);
 
   const applyTileSize = () => {
-    const scaleFactor = 0.08; // 600mm ≈ 48px
+    const scaleFactor = 0.08;
     setTileWidth(Math.max(20, Math.min(inputTileWidth * scaleFactor, 200)));
     setTileHeight(Math.max(20, Math.min(inputTileHeight * scaleFactor, 200)));
   };
@@ -47,21 +46,17 @@ export default function CeilingGrid() {
     e.evt.preventDefault();
     const stage = stageRef.current;
     if (!stage) return;
-
     const oldScale = stage.scaleX();
     const pointer = stage.getPointerPosition();
     if (!pointer) return;
-
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
-
     const direction = e.evt.deltaY > 0 ? -1 : 1;
     const factor = 1 + direction * 0.1;
     const newScale = Math.max(0.2, Math.min(oldScale * factor, 4));
     setScale(newScale);
-
     stage.scale({ x: newScale, y: newScale });
     stage.position({
       x: pointer.x - mousePointTo.x * newScale,
@@ -84,6 +79,18 @@ export default function CeilingGrid() {
 
   const toScreenX = (gx: number) => gx * tileWidth + tileWidth / 2;
   const toScreenY = (gy: number) => gy * tileHeight + tileHeight / 2;
+
+  const typeCounts = components.reduce<Record<string, number>>((acc, c) => {
+    acc[c.type] = (acc[c.type] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Function to remove all tiles of a type
+  const removeByType = (type: string) => {
+    components
+      .filter((c) => c.type === type)
+      .forEach((c) => removeComponent(c.id));
+  };
 
   return (
     <Box display="flex" height="100vh">
@@ -117,6 +124,25 @@ export default function CeilingGrid() {
         >
           Apply Tile Size
         </Button>
+
+        {/* Total tiles & type counts */}
+        <Typography variant="body2" sx={{ marginTop: 2 }}>
+          Total Tiles: {components.length}
+        </Typography>
+        <Typography variant="body2" sx={{ marginBottom: 2 }}>
+          Lights: {typeCounts.light || 0} | Air Supply: {typeCounts.air_supply || 0} | Air Return: {typeCounts.air_return || 0} | Smoke Detectors: {typeCounts.smoke_detector || 0} | Invalid: {typeCounts.invalid || 0}
+        </Typography>
+
+        {/* Remove buttons */}
+        <Typography variant="subtitle1">Remove Tiles:</Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 1 }}>
+          <Button variant="outlined" onClick={() => removeByType("light")}>Remove Lights</Button>
+          <Button variant="outlined" onClick={() => removeByType("air_supply")}>Remove Air Supply</Button>
+          <Button variant="outlined" onClick={() => removeByType("air_return")}>Remove Air Return</Button>
+          <Button variant="outlined" onClick={() => removeByType("smoke_detector")}>Remove Smoke Detectors</Button>
+          <Button variant="outlined" onClick={() => removeByType("invalid")}>Remove Invalid Tiles</Button>
+          <Button variant="contained" color="secondary" onClick={clear}>Clear All</Button>
+        </Box>
       </Box>
 
       {/* STAGE */}
@@ -132,10 +158,10 @@ export default function CeilingGrid() {
           <Layer ref={layerRef}>
             {/* GRID */}
             {verticalLines.map((p, idx) => (
-              <Line key={"v" + idx} points={p} stroke="#ccc" strokeWidth={1} />
+              <Line key={"v" + idx} points={p} stroke="#080707ff" strokeWidth={1} />
             ))}
             {horizontalLines.map((p, idx) => (
-              <Line key={"h" + idx} points={p} stroke="#eee" strokeWidth={1} />
+              <Line key={"h" + idx} points={p} stroke="#080707ff" strokeWidth={1} />
             ))}
 
             {/* COMPONENTS */}
@@ -162,7 +188,6 @@ export default function CeilingGrid() {
                   if (!occupied) {
                     updateComponent(c.id, { x: clampedX, y: clampedY });
                   } else {
-                    // Revert to original position
                     e.target.position({
                       x: c.x * tileWidth + tileWidth / 2,
                       y: c.y * tileHeight + tileHeight / 2,
