@@ -1,9 +1,14 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Line, Circle, Rect } from 'react-konva';
-import Konva from 'konva';
-import { useCeilingStore, GridItem } from '../store/store';
-import { Box, Typography, TextField, Button } from '@mui/material';
-import { panelStyles, inputStyles, buttonStyles, stageContainerStyles } from '../styles/Ceilingrid.styles';
+import React, { useRef, useState, useEffect } from "react";
+import { Stage, Layer, Line, Circle, Rect } from "react-konva";
+import Konva from "konva";
+import { useCeilingStore, GridItem } from "../store/store";
+import { Box, Typography, TextField, Button } from "@mui/material";
+import {
+  panelStyles,
+  inputStyles,
+  buttonStyles,
+  stageContainerStyles,
+} from "../styles/Ceilingrid.styles";
 
 export default function CeilingGrid() {
   const width = useCeilingStore((s) => s.width);
@@ -75,9 +80,16 @@ export default function CeilingGrid() {
 
   // Grid lines
   const verticalLines: number[][] = [];
-  for (let i = 0; i <= width; i++) verticalLines.push([i * tileWidth, 0, i * tileWidth, height * tileHeight]);
+  for (let i = 0; i <= width; i++)
+    verticalLines.push([i * tileWidth, 0, i * tileWidth, height * tileHeight]);
   const horizontalLines: number[][] = [];
-  for (let j = 0; j <= height; j++) horizontalLines.push([0, j * tileHeight, width * tileWidth, j * tileHeight]);
+  for (let j = 0; j <= height; j++)
+    horizontalLines.push([
+      0,
+      j * tileHeight,
+      width * tileWidth,
+      j * tileHeight,
+    ]);
 
   // Position helpers
   const toScreenX = (gx: number) => gx * tileWidth + tileWidth / 2;
@@ -107,7 +119,12 @@ export default function CeilingGrid() {
           sx={inputStyles}
         />
 
-        <Button variant="contained" color="primary" sx={buttonStyles} onClick={applyTileSize}>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={buttonStyles}
+          onClick={applyTileSize}
+        >
           Apply Tile Size
         </Button>
       </Box>
@@ -120,15 +137,15 @@ export default function CeilingGrid() {
           onWheel={handleWheel}
           width={window.innerWidth - 220}
           height={window.innerHeight - 60}
-          style={{ width: '100%', height: '100%' }}
+          style={{ width: "100%", height: "100%" }}
         >
           <Layer ref={layerRef}>
             {/* GRID */}
             {verticalLines.map((p, idx) => (
-              <Line key={'v' + idx} points={p} stroke="#ccc" strokeWidth={1} />
+              <Line key={"v" + idx} points={p} stroke="#ccc" strokeWidth={1} />
             ))}
             {horizontalLines.map((p, idx) => (
-              <Line key={'h' + idx} points={p} stroke="#eee" strokeWidth={1} />
+              <Line key={"h" + idx} points={p} stroke="#eee" strokeWidth={1} />
             ))}
 
             {/* COMPONENTS */}
@@ -152,19 +169,35 @@ export default function CeilingGrid() {
                 onDblClick: () => removeComponent(c.id),
               };
 
-              if (c.type === 'invalid') {
-                return <Rect {...commonProps} width={tileWidth - 4} height={tileHeight - 4} offsetX={(tileWidth - 4) / 2} offsetY={(tileHeight - 4) / 2} fill="#000" opacity={0.25} />;
+              if (c.type === "invalid") {
+                return (
+                  <Rect
+                    {...commonProps}
+                    width={tileWidth - 4}
+                    height={tileHeight - 4}
+                    offsetX={(tileWidth - 4) / 2}
+                    offsetY={(tileHeight - 4) / 2}
+                    fill="#000"
+                    opacity={0.25}
+                  />
+                );
               }
 
               const color =
-                c.type === 'light'
-                  ? '#f6c84c'
-                  : c.type === 'air_supply'
-                  ? '#4ea8f2'
-                  : c.type === 'air_return'
-                  ? '#60d394'
-                  : '#f77';
-              return <Circle {...commonProps} radius={Math.min(tileWidth, tileHeight) / 3} fill={color} />;
+                c.type === "light"
+                  ? "#f6c84c"
+                  : c.type === "air_supply"
+                  ? "#4ea8f2"
+                  : c.type === "air_return"
+                  ? "#60d394"
+                  : "#f77";
+              return (
+                <Circle
+                  {...commonProps}
+                  radius={Math.min(tileWidth, tileHeight) / 3}
+                  fill={color}
+                />
+              );
             })}
           </Layer>
         </Stage>
