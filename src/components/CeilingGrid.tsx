@@ -27,6 +27,7 @@ export default function CeilingGrid() {
   const [inputTileWidth, setInputTileWidth] = useState<number>(600);
   const [inputTileHeight, setInputTileHeight] = useState<number>(600);
 
+  // Automatically calculate tile size to fit the window
   useEffect(() => {
     const maxW = window.innerWidth - 220;
     const maxH = window.innerHeight - 60;
@@ -42,21 +43,26 @@ export default function CeilingGrid() {
     setTileHeight(Math.max(20, Math.min(inputTileHeight * scaleFactor, 200)));
   };
 
+  // Zoom handler
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const stage = stageRef.current;
     if (!stage) return;
-    const oldScale = stage.scaleX();
+
     const pointer = stage.getPointerPosition();
     if (!pointer) return;
-    const mousePointTo = {
-      x: (pointer.x - stage.x()) / oldScale,
-      y: (pointer.y - stage.y()) / oldScale,
-    };
+
+    const oldScale = scale;
     const direction = e.evt.deltaY > 0 ? -1 : 1;
     const factor = 1 + direction * 0.1;
     const newScale = Math.max(0.2, Math.min(oldScale * factor, 4));
     setScale(newScale);
+
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+
     stage.scale({ x: newScale, y: newScale });
     stage.position({
       x: pointer.x - mousePointTo.x * newScale,
@@ -65,17 +71,13 @@ export default function CeilingGrid() {
     stage.batchDraw();
   };
 
+  // Grid lines
   const verticalLines: number[][] = [];
   for (let i = 0; i <= width; i++)
     verticalLines.push([i * tileWidth, 0, i * tileWidth, height * tileHeight]);
   const horizontalLines: number[][] = [];
   for (let j = 0; j <= height; j++)
-    horizontalLines.push([
-      0,
-      j * tileHeight,
-      width * tileWidth,
-      j * tileHeight,
-    ]);
+    horizontalLines.push([0, j * tileHeight, width * tileWidth, j * tileHeight]);
 
   const toScreenX = (gx: number) => gx * tileWidth + tileWidth / 2;
   const toScreenY = (gy: number) => gy * tileHeight + tileHeight / 2;
@@ -85,7 +87,6 @@ export default function CeilingGrid() {
     return acc;
   }, {});
 
-  // Remove one tile of a given type (last added tile)
   const removeByType = (type: string) => {
     const tile = [...components].reverse().find((c) => c.type === type);
     if (tile) removeComponent(tile.id);
@@ -94,11 +95,18 @@ export default function CeilingGrid() {
   return (
     <Box display="flex" height="100vh">
       {/* SETTINGS PANEL */}
-      <Box sx={panelStyles}>
-        <Typography variant="h6" gutterBottom>
-          Tile Size (mm)
-        </Typography>
-
+      <Box
+        sx={{
+          ...panelStyles,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          padding: 2,
+          overflowY: "auto",
+        }}
+      >
+        {/* Tile Size Inputs */}
+        <Typography variant="h6">Tile Size (mm)</Typography>
         <TextField
           label="Tile Width (mm)"
           type="number"
@@ -106,7 +114,6 @@ export default function CeilingGrid() {
           onChange={(e) => setInputTileWidth(Number(e.target.value))}
           sx={inputStyles}
         />
-
         <TextField
           label="Tile Height (mm)"
           type="number"
@@ -114,7 +121,6 @@ export default function CeilingGrid() {
           onChange={(e) => setInputTileHeight(Number(e.target.value))}
           sx={inputStyles}
         />
-
         <Button
           variant="contained"
           color="primary"
@@ -124,21 +130,22 @@ export default function CeilingGrid() {
           Apply Tile Size
         </Button>
 
-        <Typography variant="body2" sx={{ marginTop: 2 }}>
-          Total Tiles: {components.length}
-        </Typography>
-        <Typography variant="body2" sx={{ marginBottom: 2 }}>
+        {/* Zoom and Stats */}
+        <Typography variant="body2">Zoom: {(scale * 100).toFixed(0)}%</Typography>
+        <Typography variant="body2">Total Tiles: {components.length}</Typography>
+        <Typography variant="body2">
           Lights: {typeCounts.light || 0} | Air Supply: {typeCounts.air_supply || 0} | Air Return: {typeCounts.air_return || 0} | Smoke Detectors: {typeCounts.smoke_detector || 0} | Invalid: {typeCounts.invalid || 0}
         </Typography>
 
+        {/* Remove Tiles Buttons */}
         <Typography variant="subtitle1">Remove Tiles:</Typography>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <Button variant="outlined" onClick={() => removeByType("light")}>Remove Light</Button>
           <Button variant="outlined" onClick={() => removeByType("air_supply")}>Remove Air Supply</Button>
           <Button variant="outlined" onClick={() => removeByType("air_return")}>Remove Air Return</Button>
           <Button variant="outlined" onClick={() => removeByType("smoke_detector")}>Remove Smoke Detector</Button>
           <Button variant="outlined" onClick={() => removeByType("invalid")}>Remove Invalid Tile</Button>
-          <Button variant="contained" color="secondary" onClick={clear}>Clear All</Button>
+          <Button variant="contained" color="error" onClick={clear}>Clear All Tiles</Button>
         </Box>
       </Box>
 
@@ -154,12 +161,8 @@ export default function CeilingGrid() {
         >
           <Layer ref={layerRef}>
             {/* GRID */}
-            {verticalLines.map((p, idx) => (
-              <Line key={"v" + idx} points={p} stroke="#080707ff" strokeWidth={1} />
-            ))}
-            {horizontalLines.map((p, idx) => (
-              <Line key={"h" + idx} points={p} stroke="#080707ff" strokeWidth={1} />
-            ))}
+            {verticalLines.map((p, idx) => <Line key={"v" + idx} points={p} stroke="#080707ff" strokeWidth={1} />)}
+            {horizontalLines.map((p, idx) => <Line key={"h" + idx} points={p} stroke="#080707ff" strokeWidth={1} />)}
 
             {/* COMPONENTS */}
             {components.map((c: GridItem) => {
@@ -174,12 +177,11 @@ export default function CeilingGrid() {
                 onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => {
                   const nx = Math.round(e.target.x() / tileWidth - 0.5);
                   const ny = Math.round(e.target.y() / tileHeight - 0.5);
-
                   const clampedX = Math.max(0, Math.min(nx, width - 1));
                   const clampedY = Math.max(0, Math.min(ny, height - 1));
 
                   const occupied = components.some(
-                    other => other.id !== c.id && other.x === clampedX && other.y === clampedY
+                    (other) => other.id !== c.id && other.x === clampedX && other.y === clampedY
                   );
 
                   if (!occupied) {
@@ -217,13 +219,8 @@ export default function CeilingGrid() {
                   : c.type === "air_return"
                   ? "#60d394"
                   : "#f77";
-              return (
-                <Circle
-                  {...commonProps}
-                  radius={Math.min(tileWidth, tileHeight) / 3}
-                  fill={color}
-                />
-              );
+
+              return <Circle {...commonProps} radius={Math.min(tileWidth, tileHeight) / 3} fill={color} />;
             })}
           </Layer>
         </Stage>
