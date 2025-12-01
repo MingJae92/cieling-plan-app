@@ -6,7 +6,7 @@ export default function Toolbar() {
   const clear = useCeilingStore((s) => s.clear);
   const components = useCeilingStore((s) => s.components);
 
-  // Your grid is fixed at 20 × 12 unless adding sizing UI later
+  // Grid is fixed at 20 × 12 unless adding sizing UI later
   const GRID_WIDTH = 20;
   const GRID_HEIGHT = 12;
 
