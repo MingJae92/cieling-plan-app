@@ -18,5 +18,5 @@ It uses **react-konva** for canvas rendering and **zustand** for state.
 
 ## Notes
 - The grid uses lines (not 1 million DOM boxes) so large sizes (100x100, 1000x1000) are feasible.
-- You can customize `gridSize` in `src/components/CeilingGrid.tsx` for a different tile pixel size.
+
 
