@@ -1,14 +1,15 @@
 # Ceiling Grid Editor — Prototype
 
-This is a minimal Vite + React + TypeScript prototype for the Consigli take-home test.
+Ceiling Grid editor prototype MVP
 It uses **react-konva** for canvas rendering and **zustand** for state.
 
 ## Features
 - Draws a rectangular ceiling grid (set width/height in toolbar)
 - Add components: Light, Air Supply, Air Return, Smoke Detector, Invalid Tile
 - Drag components to move (snap to grid on release)
-- Double-click an item to delete it
-- Wheel to zoom, drag to pan the stage
+- Click remove tile buttons to remove individual tiles. 
+- Clear tile button to clear all the tiles selected on grid.
+- Wheel to zoom, drag to pan the stage, zoom inview display and alerts user when tiles overlaps.
 
 ## Run locally
 1. `npm install`
@@ -19,7 +20,3 @@ It uses **react-konva** for canvas rendering and **zustand** for state.
 - The grid uses lines (not 1 million DOM boxes) so large sizes (100x100, 1000x1000) are feasible.
 - You can customize `gridSize` in `src/components/CeilingGrid.tsx` for a different tile pixel size.
 
-Enjoy — if you want, I can:
-- Add export/import JSON for layouts.
-- Add selection, rotate or multi-select.
-- Add nicer UI, icons, and tests.
