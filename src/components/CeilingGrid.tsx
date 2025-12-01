@@ -8,7 +8,7 @@ import {
   inputStyles,
   buttonStyles,
   stageContainerStyles,
-} from "../styles/Ceilingrid.styles";
+} from "../styles/CeilingGrid.styles";
 
 export default function CeilingGrid() {
   const width = useCeilingStore((s) => s.width);
